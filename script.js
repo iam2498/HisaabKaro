@@ -116,26 +116,9 @@ function generateId(prefix = "id") {
   return `${prefix}_${Date.now()}_${Math.random().toString(36).substring(2, 8)}`;
 }
 
-// Default starter sample page for first-time visitors
+// Default starter initial state for first-time visitors (clean empty diary)
 const DEFAULT_INITIAL_DATA = {
-  pages: [
-    {
-      id: "page_sample_1",
-      title: "Ghar Ka Kharcha (Udaharan)",
-      createdAt: new Date().toISOString(),
-      columns: [
-        { id: "sr", name: LABELS.colSr, type: "sr" },
-        { id: "col_1", name: LABELS.colDefaultName, type: "text" },
-        { id: "col_2", name: LABELS.colDefaultAmount, type: "amount" }
-      ],
-      rows: [
-        { id: "row_1", values: { col_1: "Doodh ka hisaab", col_2: 1200 } },
-        { id: "row_2", values: { col_1: "Kirana aur ration ka saman", col_2: 3450 } },
-        { id: "row_3", values: { col_1: "Bijli ka bill", col_2: 850 } },
-        { id: "row_4", values: { col_1: "Sabzi mandi", col_2: 420 } }
-      ]
-    }
-  ],
+  pages: [],
   activePageId: null // null means we are on Home Screen
 };
 
@@ -405,6 +388,20 @@ function loadData() {
     }
   } else {
     appState = norm.data;
+  }
+
+  // Remove legacy sample page if present from earlier versions
+  if (Array.isArray(appState.pages)) {
+    const beforeCount = appState.pages.length;
+    appState.pages = appState.pages.filter(
+      (p) => p && p.id !== "page_sample_1" && p.title !== "Ghar Ka Kharcha (Udaharan)"
+    );
+    if (appState.pages.length !== beforeCount) {
+      if (appState.activePageId === "page_sample_1") {
+        appState.activePageId = null;
+      }
+      saveData();
+    }
   }
 
   updateRecoveryLinkUI();
