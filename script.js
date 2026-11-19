@@ -93,7 +93,17 @@ const LABELS = {
   printGhata: "Ghata (-)",
   printFooter: "Hisaab Karo se banaya gaya",
   printEmptyEntry: "Koi entry nahi",
-  defaultNewPageTitle: (date) => `Hisaab - ${date}`
+  defaultNewPageTitle: (date) => `Hisaab - ${date}`,
+
+  // PDF Standalone / File Generation
+  toastPdfMaking: "PDF ban rahi hai...",
+  toastPdfFailed: "PDF nahi ban payi. Safari me website kholkar dobara koshish karein.",
+  toastPdfLibFail: "PDF library load nahi ho payi. Dobara koshish karein.",
+  pdfReadyTitle: "PDF taiyaar hai",
+  pdfBtnShare: "PDF share / save karein",
+  pdfBtnOpen: "PDF kholein",
+  pdfBtnClose: "Band karein",
+  pdfHintSave: "Save karne ke liye share screen me 'Save to Files' chuno"
 };
 
 // ============================================================================
@@ -630,6 +640,18 @@ const dom = {
   modalConfirmMessage: document.getElementById("modal-confirm-message"),
   btnConfirmAction: document.getElementById("btn-confirm-action"),
 
+  // Standalone / File PDF Modal
+  modalPdfShare: document.getElementById("modal-pdf-share"),
+  modalPdfTitle: document.getElementById("modal-pdf-title"),
+  btnSharePdf: document.getElementById("btn-share-pdf"),
+  labelPdfBtnShare: document.getElementById("label-pdf-btn-share"),
+  linkOpenPdf: document.getElementById("link-open-pdf"),
+  labelPdfBtnOpen: document.getElementById("label-pdf-btn-open"),
+  btnClosePdfModal: document.getElementById("btn-close-pdf-modal"),
+  btnClosePdfModalX: document.getElementById("btn-close-pdf-modal-x"),
+  labelPdfBtnClose: document.getElementById("label-pdf-btn-close"),
+  pdfStandaloneHint: document.getElementById("pdf-standalone-hint"),
+
   toastContainer: document.getElementById("toast-container"),
   printSheet: document.getElementById("print-sheet")
 };
@@ -645,7 +667,8 @@ function openModal(modalEl) {
   [
     dom.modalCreatePage,
     dom.modalRenamePage,
-    dom.modalConfirm
+    dom.modalConfirm,
+    dom.modalPdfShare
   ].forEach((el) => {
     if (el) el.style.display = "none";
   });
@@ -653,7 +676,7 @@ function openModal(modalEl) {
   dom.modalBackdrop.style.display = "flex";
   modalEl.style.display = "block";
 
-  const firstInput = modalEl.querySelector("input, select, button.btn-modal-primary, button.btn-primary");
+  const firstInput = modalEl.querySelector("input, select, button.btn-modal-primary, button.btn-primary, button.btn-pdf-primary");
   if (firstInput) {
     setTimeout(() => firstInput.focus(), 50);
   }
@@ -665,6 +688,7 @@ function openModal(modalEl) {
 function closeModal() {
   dom.modalBackdrop.style.display = "none";
   pendingModalAction = null;
+  cleanupPdfFileModal();
 }
 
 /**
@@ -679,7 +703,7 @@ function confirmAction(title, message, onConfirm) {
 
 // Global modal event listeners
 dom.modalBackdrop.addEventListener("click", (e) => {
-  if (e.target === dom.modalBackdrop || e.target.dataset.close === "true") {
+  if (e.target === dom.modalBackdrop || e.target.dataset.close === "true" || e.target.closest('[data-close="true"]')) {
     closeModal();
   }
 });
@@ -715,6 +739,21 @@ function showToast(message, isError = false) {
       toast.parentNode.removeChild(toast);
     }
   }, 2800);
+}
+
+/**
+ * Loading toast notification that can be dismissed on demand
+ */
+function showLoadingToast(message) {
+  const toast = document.createElement("div");
+  toast.className = "toast";
+  toast.textContent = message;
+  dom.toastContainer.appendChild(toast);
+  return function dismiss() {
+    if (toast.parentNode) {
+      toast.parentNode.removeChild(toast);
+    }
+  };
 }
 
 /**
@@ -1911,17 +1950,376 @@ function clearPrintSheet() {
   }
 }
 
+// ============================================================================
+// STANDALONE / FILE PDF GENERATION (Path 2: iOS PWA & File Fallback)
+// ============================================================================
+
+let isGeneratingPdf = false;
+let currentPdfBlobUrl = null;
+let currentPdfFile = null;
+let currentPdfTitle = "";
+const loadedScripts = new Map();
+
+/**
+ * Lazy script loader - loads a local script once and caches the promise
+ */
+function loadScriptOnce(src) {
+  if (loadedScripts.has(src)) {
+    return loadedScripts.get(src);
+  }
+  const promise = new Promise((resolve, reject) => {
+    const existing = document.querySelector(`script[src="${src}"]`);
+    if (existing) {
+      resolve();
+      return;
+    }
+    const script = document.createElement("script");
+    script.src = src;
+    script.async = true;
+    script.onload = () => resolve();
+    script.onerror = () => {
+      if (script.parentNode) script.parentNode.removeChild(script);
+      loadedScripts.delete(src);
+      reject(new Error(`Failed to load script: ${src}`));
+    };
+    document.head.appendChild(script);
+  });
+  loadedScripts.set(src, promise);
+  return promise;
+}
+
+/**
+ * Detect standalone / home-screen PWA mode
+ */
+function isStandaloneApp() {
+  try {
+    if (window.navigator && window.navigator.standalone === true) {
+      return true;
+    }
+    if (window.matchMedia && window.matchMedia("(display-mode: standalone)").matches) {
+      return true;
+    }
+  } catch (e) {}
+  return false;
+}
+
+/**
+ * Check whether to use Path 2 (File PDF generation)
+ * Uses Path 2 for standalone apps, missing window.print, or ?pdf=file testing switch
+ */
+function shouldUsePdfFileGenerator() {
+  try {
+    const urlParams = new URLSearchParams(window.location.search);
+    if (urlParams.get("pdf") === "file") {
+      return true;
+    }
+  } catch (e) {}
+  if (isStandaloneApp()) {
+    return true;
+  }
+  if (typeof window.print !== "function") {
+    return true;
+  }
+  return false;
+}
+
+/**
+ * Cleanup allocated blob URLs and memory for the PDF share modal
+ */
+function cleanupPdfFileModal() {
+  if (currentPdfBlobUrl) {
+    URL.revokeObjectURL(currentPdfBlobUrl);
+    currentPdfBlobUrl = null;
+  }
+  currentPdfFile = null;
+  currentPdfTitle = "";
+  if (dom.linkOpenPdf) {
+    dom.linkOpenPdf.removeAttribute("href");
+  }
+}
+
+/**
+ * Capture element using html2canvas with scale fallback for iOS memory limits
+ */
+async function captureElementWithFallback(el) {
+  const scales = [2, 1.5, 1];
+  let lastError = null;
+
+  for (const scale of scales) {
+    try {
+      const canvas = await window.html2canvas(el, {
+        scale: scale,
+        backgroundColor: "#ffffff",
+        useCORS: false,
+        logging: false
+      });
+      if (canvas && canvas.width > 0 && canvas.height > 0) {
+        if (canvas.width * canvas.height <= 16777216) {
+          return canvas;
+        }
+      }
+    } catch (err) {
+      console.warn(`html2canvas failed at scale ${scale}:`, err);
+      lastError = err;
+    }
+  }
+
+  throw lastError || new Error("Failed to capture receipt canvas");
+}
+
+/**
+ * Extract a vertical slice from the rendered canvas as a JPEG data URL
+ */
+function getCanvasSliceDataUrl(sourceCanvas, startY, heightPx) {
+  const sliceCanvas = document.createElement("canvas");
+  sliceCanvas.width = sourceCanvas.width;
+  sliceCanvas.height = heightPx;
+  const ctx = sliceCanvas.getContext("2d");
+  ctx.fillStyle = "#ffffff";
+  ctx.fillRect(0, 0, sliceCanvas.width, sliceCanvas.height);
+  ctx.drawImage(
+    sourceCanvas,
+    0, startY, sourceCanvas.width, heightPx,
+    0, 0, sliceCanvas.width, heightPx
+  );
+  return sliceCanvas.toDataURL("image/jpeg", 0.92);
+}
+
+/**
+ * Path 2: Generate PDF file from receipt canvas and open share bottom sheet
+ */
+async function generateAndSharePdfFile(page) {
+  if (isGeneratingPdf) return;
+  isGeneratingPdf = true;
+
+  if (dom.btnPrintPdf) dom.btnPrintPdf.classList.add("is-loading");
+  const dismissLoadingToast = showLoadingToast(LABELS.toastPdfMaking);
+
+  try {
+    // 1. Lazy load libraries from /lib
+    try {
+      await Promise.all([
+        loadScriptOnce("lib/html2canvas.min.js"),
+        loadScriptOnce("lib/jspdf.umd.min.js")
+      ]);
+    } catch (loadErr) {
+      console.error("Failed to load PDF libraries:", loadErr);
+      dismissLoadingToast();
+      showToast(LABELS.toastPdfLibFail, true);
+      return;
+    }
+
+    const { jsPDF } = window.jspdf || window;
+    if (!window.html2canvas || !jsPDF) {
+      throw new Error("PDF libraries not initialized properly");
+    }
+
+    // 2. Build print receipt DOM
+    buildPrintSheet();
+
+    const printSheet = dom.printSheet || document.getElementById("print-sheet");
+    if (!printSheet) throw new Error("Print sheet container missing");
+
+    // 3. Save scroll position and capture receipt off-screen
+    const scrollX = window.scrollX || window.pageXOffset || 0;
+    const scrollY = window.scrollY || window.pageYOffset || 0;
+
+    printSheet.classList.add("is-capturing");
+
+    let canvas;
+    try {
+      if (document.fonts && document.fonts.ready) {
+        await document.fonts.ready;
+      }
+      canvas = await captureElementWithFallback(printSheet);
+    } finally {
+      printSheet.classList.remove("is-capturing");
+      window.scrollTo(scrollX, scrollY);
+    }
+
+    // 4. Measure line breaks and closing part
+    const sheetRect = printSheet.getBoundingClientRect();
+    const canvasScale = canvas.width / (sheetRect.width || 794);
+    const pxPerMm = canvas.width / 210;
+
+    const lineElements = Array.from(printSheet.querySelectorAll(".print-body .print-line"));
+    const lineOffsets = lineElements.map((el) => {
+      const r = el.getBoundingClientRect();
+      return (r.bottom - sheetRect.top) * canvasScale;
+    });
+
+    const closingEl = printSheet.querySelector(".print-closing");
+    let closingTopCanvas = canvas.height;
+    if (closingEl) {
+      const r = closingEl.getBoundingClientRect();
+      closingTopCanvas = (r.top - sheetRect.top) * canvasScale;
+    }
+
+    // 5. Slice into A4 pages (A4 portrait: 210mm wide x 297mm high)
+    // Page 1: content from 0 to <= 285mm (top padding 12mm is in canvas at 0..12mm)
+    // Page 2+: destY = 12mm, slice height <= 273mm
+    const pages = [];
+    let currentStartY = 0;
+
+    while (currentStartY < canvas.height - 2) {
+      const isFirstPage = (pages.length === 0);
+      const maxSliceHeightMm = isFirstPage ? 285 : 273;
+      const maxSliceHeightPx = maxSliceHeightMm * pxPerMm;
+      const maxAllowedY = currentStartY + maxSliceHeightPx;
+
+      // If the remainder fits within maxAllowedY:
+      if (canvas.height <= maxAllowedY) {
+        pages.push({
+          startY: currentStartY,
+          heightPx: canvas.height - currentStartY,
+          destY: isFirstPage ? 0 : 12
+        });
+        break;
+      }
+
+      // If closing part does not fit on current page:
+      // Page break must be at bottom of an eligible .print-line ending before closingTopCanvas and <= maxAllowedY
+      const eligibleOffsets = lineOffsets.filter(
+        (y) => y > currentStartY + 10 && y <= maxAllowedY && y <= closingTopCanvas
+      );
+
+      let breakY;
+      if (eligibleOffsets.length > 0) {
+        breakY = eligibleOffsets[eligibleOffsets.length - 1];
+      } else {
+        breakY = Math.min(maxAllowedY, closingTopCanvas);
+      }
+
+      if (breakY <= currentStartY + 10) {
+        breakY = Math.min(currentStartY + maxSliceHeightPx, canvas.height);
+      }
+
+      pages.push({
+        startY: currentStartY,
+        heightPx: breakY - currentStartY,
+        destY: isFirstPage ? 0 : 12
+      });
+
+      currentStartY = breakY;
+    }
+
+    // 6. Build PDF in jsPDF using images
+    const pdf = new jsPDF({
+      orientation: "portrait",
+      unit: "mm",
+      format: "a4",
+      compress: true
+    });
+
+    pages.forEach((p, idx) => {
+      if (idx > 0) {
+        pdf.addPage("a4", "portrait");
+      }
+      const sliceDataUrl = getCanvasSliceDataUrl(canvas, p.startY, p.heightPx);
+      const sliceHeightMm = p.heightPx * (210 / canvas.width);
+      pdf.addImage(sliceDataUrl, "JPEG", 0, p.destY, 210, sliceHeightMm, undefined, "FAST");
+    });
+
+    // 7. Generate Blob and File
+    const blob = pdf.output("blob");
+    const cleanTitle = (page.title || LABELS.untitledHisaab).replace(/[\\/:*?"<>|]/g, "").trim() || LABELS.untitledHisaab;
+    const filename = `${cleanTitle}.pdf`;
+
+    let file = null;
+    try {
+      file = new File([blob], filename, { type: "application/pdf" });
+    } catch (e) {
+      file = null;
+    }
+
+    cleanupPdfFileModal();
+
+    currentPdfBlobUrl = URL.createObjectURL(blob);
+    currentPdfFile = file;
+    currentPdfTitle = cleanTitle;
+
+    // 8. Configure Bottom Sheet UI
+    if (dom.modalPdfTitle) dom.modalPdfTitle.textContent = LABELS.pdfReadyTitle;
+    if (dom.labelPdfBtnShare) dom.labelPdfBtnShare.textContent = LABELS.pdfBtnShare;
+    if (dom.labelPdfBtnOpen) dom.labelPdfBtnOpen.textContent = LABELS.pdfBtnOpen;
+    if (dom.labelPdfBtnClose) dom.labelPdfBtnClose.textContent = LABELS.pdfBtnClose;
+
+    if (dom.linkOpenPdf) {
+      dom.linkOpenPdf.href = currentPdfBlobUrl;
+      dom.linkOpenPdf.setAttribute("download", filename);
+    }
+
+    if (dom.pdfStandaloneHint) {
+      if (isStandaloneApp()) {
+        dom.pdfStandaloneHint.textContent = LABELS.pdfHintSave;
+        dom.pdfStandaloneHint.style.display = "block";
+      } else {
+        dom.pdfStandaloneHint.style.display = "none";
+      }
+    }
+
+    dismissLoadingToast();
+    openModal(dom.modalPdfShare);
+
+  } catch (err) {
+    console.error("PDF file generation failed:", err);
+    dismissLoadingToast();
+    showToast(LABELS.toastPdfFailed, true);
+  } finally {
+    isGeneratingPdf = false;
+    if (dom.btnPrintPdf) dom.btnPrintPdf.classList.remove("is-loading");
+  }
+}
+
+// Hook up share button click
+if (dom.btnSharePdf) {
+  dom.btnSharePdf.addEventListener("click", async () => {
+    try {
+      if (currentPdfFile && navigator.canShare && navigator.canShare({ files: [currentPdfFile] })) {
+        await navigator.share({
+          files: [currentPdfFile],
+          title: currentPdfTitle
+        });
+      } else if (navigator.share) {
+        await navigator.share({
+          title: currentPdfTitle,
+          url: currentPdfBlobUrl
+        });
+      } else {
+        // Fallback for browsers without file share
+        const dlLink = document.createElement("a");
+        dlLink.href = currentPdfBlobUrl;
+        dlLink.download = currentPdfFile ? currentPdfFile.name : `${currentPdfTitle}.pdf`;
+        dlLink.click();
+      }
+    } catch (err) {
+      if (err && err.name === "AbortError") {
+        return; // User cancelled share sheet, ignore
+      }
+      console.warn("navigator.share error:", err);
+    }
+  });
+}
+
 /**
  * Handle PDF download button:
  * - Preserves Gujarati and Devanagari titles in the suggested filename.
  * - Strips only illegal filename characters: /[\/:*?"<>|]/g
- * - Builds #print-sheet right before print.
- * - Restores original document.title using afterprint event with { once: true }.
- * - Does NOT clear #print-sheet on afterprint to protect iOS Safari preview rendering.
+ * - In standalone mode (or ?pdf=file), generates a real PDF file and opens share sheet.
+ * - In normal browser, uses native window.print() dialog with document.title logic.
+ * - Falls back to file generation if window.print throws.
  */
 dom.btnPrintPdf.addEventListener("click", () => {
   const page = getCurrentPage();
-  if (page) {
+  if (!page) return;
+
+  if (shouldUsePdfFileGenerator()) {
+    generateAndSharePdfFile(page);
+    return;
+  }
+
+  // Path 1: Normal browser print dialog
+  try {
     const previousTitle = document.title;
     const cleanTitle = (page.title || LABELS.untitledHisaab).replace(/[\\/:*?"<>|]/g, "").trim();
     document.title = `${cleanTitle} - Hisaab Karo`;
@@ -1937,6 +2335,9 @@ dom.btnPrintPdf.addEventListener("click", () => {
     );
 
     window.print();
+  } catch (err) {
+    console.warn("window.print() threw, falling back to file generation:", err);
+    generateAndSharePdfFile(page);
   }
 });
 

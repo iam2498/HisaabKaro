@@ -220,6 +220,36 @@
       </div>
     </div>
 
+    <!-- Modal 4: Standalone / File PDF Ready Bottom Sheet -->
+    <div id="modal-pdf-share" class="modal-card" style="display: none;">
+      <div class="modal-header">
+        <h3 id="modal-pdf-title" class="modal-title">PDF taiyaar hai</h3>
+        <button type="button" class="btn-close-modal" id="btn-close-pdf-modal-x" data-close="true" aria-label="Band karein">&times;</button>
+      </div>
+      <div class="modal-body modal-pdf-body">
+        <button type="button" id="btn-share-pdf" class="btn-pdf-action btn-pdf-primary">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8"></path>
+            <polyline points="16 6 12 2 8 6"></polyline>
+            <line x1="12" y1="2" x2="12" y2="15"></line>
+          </svg>
+          <span id="label-pdf-btn-share">PDF share / save karein</span>
+        </button>
+        <a id="link-open-pdf" class="btn-pdf-action btn-pdf-secondary" target="_blank" rel="noopener">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path>
+            <polyline points="15 3 21 3 21 9"></polyline>
+            <line x1="10" y1="14" x2="21" y2="3"></line>
+          </svg>
+          <span id="label-pdf-btn-open">PDF kholein</span>
+        </a>
+        <button type="button" id="btn-close-pdf-modal" class="btn-pdf-action btn-pdf-close" data-close="true">
+          <span id="label-pdf-btn-close">Band karein</span>
+        </button>
+        <p id="pdf-standalone-hint" class="pdf-standalone-hint" style="display: none;"></p>
+      </div>
+    </div>
+
   </div>
 
   <!-- Toast Message Alert for Feedback -->

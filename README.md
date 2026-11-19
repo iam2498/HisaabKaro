@@ -39,10 +39,11 @@ Ek behad aasan aur saaf-suthra mobile-first digital khata ledger web app. Isme k
    - Multi-tab synchronization: do tabs me kholne par data sync rehta hai bina cursor disturb kiye.
    - Corrupted data protection: kharab data ko timestamped backup key me preserve karta hai.
 
-5. **📄 PDF Download (Gujarati & Hindi Supported):**
-   - Single clean calculation sheet without borders or grids.
-   - Saffron header block (#FFF1D0) aur minimal neutral Total box.
-   - Gujarati aur Hindi titles PDF ke filename me surakshit rehte hain.
+5. **📄 PDF Download (Receipt-Style Sheet & iOS Share Sheet):**
+   - Paper receipt design with saffron header block (#FFF1D0) aur minimal Total box.
+   - Gujarati aur Devanagari titles/details bina tute safalta se render hote hain.
+   - **iPhone Home Screen (Standalone App) Support:** iPhone home screen app me PDF share sheet se save hoti hai; Safari me print dialog se bhi PDF ban sakti hai.
+   - A4 page calculation: badi lists (60+ rows) me lines beech me nahi kat-ti aur Total box akela naye page par nahi jata.
 
 6. **💾 Backup & Restore (Sanitized & Validated):**
    - **Backup lein:** Sara hisaab `.json` file me download karein.
@@ -107,8 +108,11 @@ Bina kisi coding ke 1 minute me online live karein:
 
 ```text
 HisaabKaro/
-├── index.html    # Mobile-first semantic HTML markup (<meta viewport-fit=cover>, <script defer>)
-├── style.css     # Clean mobile layout, CSS tokens, bottom sheets, print stylesheet
-├── script.js     # Vanilla JS, calculation engine, inline card menu, auto-save, multi-tab sync & backup logic
-└── README.md     # Setup, phone installation, deployment & backup guide
+├── index.html               # Mobile-first semantic HTML markup (<meta viewport-fit=cover>, <script defer>)
+├── style.css                # Clean mobile layout, CSS tokens, bottom sheets, receipt stylesheet
+├── script.js                # Vanilla JS, calculation engine, inline card menu, auto-save, multi-tab sync & PDF generator
+├── lib/                     # Vendored PDF libraries (loaded lazily only in standalone/file mode)
+│   ├── html2canvas.min.js   # html2canvas v1.4.1 (DOM to canvas rasterizer)
+│   └── jspdf.umd.min.js     # jsPDF v2.5.1 (A4 PDF document builder)
+└── README.md                # Setup, phone installation, deployment & backup guide
 ```

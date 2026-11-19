@@ -1015,6 +1015,74 @@ button, a, input, select, textarea {
   opacity: 0.9;
 }
 
+/* PDF Share Bottom Sheet */
+.modal-pdf-body {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-bottom: 8px;
+}
+
+.btn-pdf-action {
+  height: 48px;
+  min-height: 48px;
+  font-size: 0.9375rem;
+  font-weight: 500;
+  border-radius: 8px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  text-decoration: none;
+  box-sizing: border-box;
+  width: 100%;
+}
+
+.btn-pdf-primary {
+  background: var(--ink);
+  color: var(--bg);
+  border: none;
+}
+
+.btn-pdf-primary:active {
+  opacity: 0.9;
+}
+
+.btn-pdf-secondary {
+  background: transparent;
+  color: var(--ink);
+  border: 1px solid var(--line);
+}
+
+.btn-pdf-secondary:active {
+  background: var(--line);
+}
+
+.btn-pdf-close {
+  background: transparent;
+  color: var(--muted);
+  border: none;
+  font-weight: 400;
+}
+
+.btn-pdf-close:active {
+  background: rgba(0, 0, 0, 0.05);
+}
+
+.pdf-standalone-hint {
+  font-size: 0.8125rem; /* 13px */
+  color: var(--muted);
+  text-align: center;
+  margin: 6px 0 2px;
+  line-height: 1.4;
+}
+
+.btn-top-pdf.is-loading {
+  opacity: 0.5;
+  pointer-events: none;
+}
+
 /* --- 6. TOAST NOTIFICATIONS (With Undo Support) --- */
 .toast-container {
   position: fixed;
@@ -1072,8 +1140,30 @@ button, a, input, select, textarea {
 }
 
 /* Hidden print-only container on screen */
+#print-sheet,
 .print-sheet {
   display: none;
+}
+
+#print-sheet.is-capturing,
+.print-sheet.is-capturing {
+  display: block !important;
+  position: absolute !important;
+  left: -10000px !important;
+  top: 0 !important;
+  width: 210mm !important;
+  padding: 12mm 10mm !important;
+  background: #ffffff !important;
+  color: #1C1917 !important;
+  box-sizing: border-box !important;
+  margin: 0 !important;
+  border: none !important;
+  box-shadow: none !important;
+  z-index: -9999 !important;
+  pointer-events: none !important;
+  font-family: "Noto Sans Gujarati", "Noto Sans Devanagari", "Shruti", "Mangal", "Nirmala UI", system-ui, sans-serif !important;
+  -webkit-print-color-adjust: exact !important;
+  print-color-adjust: exact !important;
 }
 
 @keyframes fadeInOut {
@@ -1118,6 +1208,9 @@ button, a, input, select, textarea {
   #print-sheet,
   .print-sheet {
     display: block !important;
+    position: static !important;
+    left: auto !important;
+    top: auto !important;
     width: 100% !important;
     background: #ffffff !important;
     color: #1C1917 !important;
@@ -1125,6 +1218,7 @@ button, a, input, select, textarea {
     border: none !important;
     padding: 0 !important;
     margin: 0 !important;
+    z-index: auto !important;
   }
 
   /* Force background fills and colors across all browsers */
@@ -1135,9 +1229,10 @@ button, a, input, select, textarea {
     -webkit-print-color-adjust: exact !important;
     print-color-adjust: exact !important;
   }
+}
 
-  /* Receipt container: 170mm wide, centered, light border, rounded corners */
-  .print-receipt {
+/* Receipt container: 170mm wide, centered, light border, rounded corners (Screen & Print) */
+.print-receipt {
     width: 170mm !important;
     max-width: 100% !important;
     margin: 0 auto !important;
@@ -1381,4 +1476,3 @@ button, a, input, select, textarea {
     color: #78716C !important;
     padding: 6mm !important;
   }
-}
