@@ -91,7 +91,7 @@ const LABELS = {
   printColAmount: "Amount",
   printJama: "Jama (+)",
   printGhata: "Ghata (-)",
-  printFooter: "Hisaab Karo se banaya gaya",
+  printFooter: "Har hisaab mein aasani ❤️ — Made by iam2498",
   printEmptyEntry: "Koi entry nahi",
   defaultNewPageTitle: (date) => `Hisaab - ${date}`,
 
