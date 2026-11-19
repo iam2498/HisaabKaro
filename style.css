@@ -1,0 +1,1384 @@
+/* ==========================================================================
+   Hisaab Karo - Clean Mobile-First Khata Ledger
+   ========================================================================== */
+
+/* --- 1. DESIGN TOKENS --- */
+:root {
+  --bg: #FBF8F1;
+  --card: #FFFFFF;
+  --line: #E7E0D0;
+  --ink: #1C1917;
+  --muted: #78716C;
+  --saffron: #D97706;
+  --saffron-soft: #FFF1D0;
+  --pos: #166534;
+  --neg: #B91C1C;
+  --ok-dot: #16A34A;
+  --entry-h: 120px;
+  
+  --font-sans: "Noto Sans Gujarati", "Noto Sans Devanagari", "Nirmala UI", system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  --font-mono: "Courier New", "Noto Sans Mono", monospace;
+}
+
+/* --- 2. GLOBAL RESET & BASE RULES --- */
+*, *::before, *::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+  -webkit-tap-highlight-color: transparent;
+}
+
+html {
+  font-size: 16px;
+  -webkit-text-size-adjust: 100%;
+}
+
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--ink);
+  overscroll-behavior-y: none;
+  font-family: var(--font-sans);
+  line-height: 1.4;
+  min-height: 100vh;
+  min-height: 100dvh;
+}
+
+button, a, input, select, textarea {
+  touch-action: manipulation;
+  font-family: inherit;
+}
+
+/* Accessibility utility */
+.visually-hidden {
+  position: absolute !important;
+  width: 1px !important;
+  height: 1px !important;
+  padding: 0 !important;
+  margin: -1px !important;
+  overflow: hidden !important;
+  clip: rect(0, 0, 0, 0) !important;
+  white-space: nowrap !important;
+  border: 0 !important;
+}
+
+/* --- 3. MAIN CONTAINER & HOME SCREEN LAYOUT --- */
+.app-main {
+  width: 100%;
+  margin: 0 auto;
+}
+
+.home-container {
+  width: 100%;
+  max-width: 480px;
+  margin: 0 auto;
+  min-height: 100vh;
+  min-height: 100dvh;
+  display: flex;
+  flex-direction: column;
+  box-sizing: border-box;
+  background: var(--bg);
+}
+
+/* Redesigned Header */
+.app-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding-top: max(16px, env(safe-area-inset-top));
+  padding-bottom: 12px;
+  padding-left: max(16px, env(safe-area-inset-left));
+  padding-right: max(16px, env(safe-area-inset-right));
+  background: var(--bg);
+}
+
+.brand {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  cursor: pointer;
+  user-select: none;
+}
+
+.brand-icon-wrap {
+  width: 36px;
+  height: 36px;
+  border-radius: 10px;
+  background: var(--saffron-soft);
+  color: var(--saffron);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.brand-title {
+  font-size: 1.125rem; /* 18px */
+  font-weight: 500;
+  color: var(--ink);
+  line-height: 1.2;
+  margin: 0;
+}
+
+.header-save {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.75rem; /* 12px */
+  color: var(--muted);
+  user-select: none;
+  transition: opacity 0.2s ease;
+}
+
+.save-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--ok-dot);
+  display: inline-block;
+  flex-shrink: 0;
+}
+
+.save-text {
+  font-size: 0.75rem;
+  color: var(--muted);
+}
+
+/* Section Header ("Mere hisaab", "N pages") */
+.home-section-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  padding: 4px 16px 8px;
+}
+
+.section-title {
+  font-size: 0.875rem; /* 14px */
+  font-weight: 500;
+  color: var(--muted);
+  margin: 0;
+}
+
+.section-count {
+  font-size: 0.75rem; /* 12px */
+  color: var(--muted);
+}
+
+/* Cards List */
+.cards-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 0 12px;
+  flex: 1 0 auto;
+}
+
+/* Hisaab Card */
+.page-card {
+  background: var(--card);
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  padding: 4px 4px 12px 16px;
+  cursor: pointer;
+  position: relative;
+  transition: background-color 0.1s ease;
+  user-select: none;
+}
+
+.page-card:active {
+  background: #FBF8F1;
+}
+
+/* Row 1: Title & More Button */
+.card-row-1 {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.card-title-btn {
+  font-size: 1rem; /* 16px */
+  font-weight: 500;
+  color: var(--ink);
+  background: none;
+  border: none;
+  padding: 0;
+  margin: 0;
+  text-align: left;
+  cursor: pointer;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  overflow-wrap: anywhere;
+  word-break: break-word;
+  line-height: 1.35;
+  flex: 1;
+}
+
+.card-more-btn {
+  width: 44px;
+  height: 44px;
+  min-width: 44px;
+  min-height: 44px;
+  padding: 0;
+  border: none;
+  background: transparent;
+  color: var(--muted);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  border-radius: 8px;
+}
+
+.card-more-btn:active {
+  background: var(--line);
+}
+
+/* Row 2: Metadata & Total */
+.card-row-2 {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  padding-right: 12px;
+  margin-top: -2px;
+  gap: 8px;
+}
+
+.card-meta {
+  font-size: 0.75rem; /* 12px */
+  color: var(--muted);
+}
+
+.card-total {
+  font-family: var(--font-mono);
+  font-size: 1.125rem; /* 18px */
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  color: var(--ink);
+  white-space: nowrap;
+}
+
+.card-total.is-pos {
+  color: var(--pos);
+}
+
+.card-total.is-neg {
+  color: var(--neg);
+}
+
+/* Inline Card Menu */
+.card-menu {
+  display: flex;
+  gap: 8px;
+  padding: 8px 12px 0 0;
+}
+
+.card-menu-btn {
+  flex: 1;
+  height: 44px;
+  min-height: 44px;
+  font-size: 0.875rem; /* 14px */
+  font-weight: 500;
+  background: var(--bg);
+  border: 1px solid var(--line);
+  color: var(--ink);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  border-radius: 8px;
+  cursor: pointer;
+}
+
+.card-menu-btn:active {
+  background: var(--line);
+}
+
+.card-menu-btn.btn-delete {
+  color: var(--neg);
+}
+
+/* Empty State */
+.home-empty {
+  padding: 40px 16px;
+  text-align: center;
+  flex: 1;
+}
+
+.empty-msg {
+  font-size: 0.875rem; /* 14px */
+  color: var(--muted);
+  margin: 0;
+  line-height: 1.5;
+}
+
+/* Backup Row */
+.backup-row {
+  display: flex;
+  justify-content: center;
+  gap: 4px;
+  padding: 12px 12px 4px;
+  margin-top: auto;
+}
+
+.btn-backup {
+  height: 44px;
+  min-height: 44px;
+  padding: 0 12px;
+  border: none;
+  background: transparent;
+  color: var(--muted);
+  font-size: 0.8125rem; /* 13px */
+  font-weight: 500;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  cursor: pointer;
+  border-radius: 6px;
+}
+
+.btn-backup:active {
+  background: var(--line);
+  color: var(--ink);
+}
+
+/* Small Recovery Link */
+.recovery-row {
+  display: flex;
+  justify-content: center;
+  padding: 2px 12px 8px;
+}
+
+.btn-recovery {
+  height: 38px;
+  min-height: 38px;
+  padding: 0 10px;
+  border: none;
+  background: transparent;
+  color: var(--muted);
+  font-size: 0.8125rem; /* 13px */
+  font-weight: 500;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  cursor: pointer;
+  border-radius: 6px;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  opacity: 0.85;
+}
+
+.btn-recovery:hover,
+.btn-recovery:active {
+  opacity: 1;
+  color: var(--ink);
+}
+
+/* Sticky Bottom Bar */
+.bottom-bar {
+  position: sticky;
+  bottom: 0;
+  background: var(--bg);
+  border-top: 1px solid var(--line);
+  padding: 10px 16px calc(16px + env(safe-area-inset-bottom));
+  z-index: 20;
+  margin-top: 6px;
+}
+
+.btn-new-hisaab {
+  height: 48px;
+  min-height: 48px;
+  width: 100%;
+  border: none;
+  background: var(--ink);
+  color: var(--bg);
+  font-size: 1rem; /* 16px */
+  font-weight: 500;
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  cursor: pointer;
+}
+
+.btn-new-hisaab:active {
+  opacity: 0.9;
+}
+
+/* --- 4. VIEW 2: NOTEBOOK PAGE SCREEN (Ledger List + Entry Box) --- */
+.ledger-screen {
+  max-width: 480px;
+  width: 100%;
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+  min-height: 100dvh;
+  background-color: var(--card);
+  box-sizing: border-box;
+  position: relative;
+  overflow-x: hidden;
+}
+
+@media (min-width: 520px) {
+  .ledger-screen {
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    margin-top: 14px;
+    margin-bottom: 24px;
+    min-height: calc(100vh - 28px);
+    min-height: calc(100dvh - 28px);
+  }
+}
+
+/* Top bar: back arrow (to Home), page title (tap to rename), and PDF button */
+.ledger-top-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 8px 12px;
+  border-bottom: 1px solid var(--line);
+  background-color: var(--card);
+  min-height: 56px;
+  box-sizing: border-box;
+  position: relative;
+  z-index: 10;
+}
+
+.btn-top-back {
+  background: transparent;
+  border: 1px solid transparent;
+  color: var(--ink);
+  min-width: 44px;
+  min-height: 44px;
+  width: 44px;
+  height: 44px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  border-radius: 6px;
+  padding: 0;
+  flex-shrink: 0;
+}
+
+.btn-top-back:active {
+  background-color: var(--bg);
+}
+
+.page-title-wrap {
+  flex: 1;
+  min-width: 0;
+  margin: 0 4px;
+}
+
+.page-main-title {
+  font-size: 1.125rem; /* 18px */
+  font-weight: 700;
+  color: var(--ink);
+  margin: 0;
+  line-height: 1.3;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  cursor: pointer;
+  padding: 6px 8px;
+  border-radius: 4px;
+  border: 1px dashed transparent;
+  user-select: none;
+}
+
+.page-main-title:hover,
+.page-main-title:focus {
+  background-color: var(--bg);
+  border-color: var(--line);
+  outline: none;
+}
+
+.btn-top-pdf {
+  min-width: 44px;
+  height: 44px;
+  padding: 0 14px;
+  background-color: var(--card);
+  border: 1px solid var(--muted);
+  border-radius: 6px;
+  color: var(--ink);
+  font-weight: 700;
+  font-size: 0.875rem;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  flex-shrink: 0;
+}
+
+.btn-top-pdf:active {
+  background-color: var(--bg);
+}
+
+.btn-pdf-icon {
+  font-size: 15px;
+}
+
+/* Old Columns Notification Line */
+.old-columns-note {
+  font-size: 0.75rem;
+  color: var(--muted);
+  background-color: #FFFBEB;
+  border-bottom: 1px solid #FEF3C7;
+  padding: 6px 14px;
+  line-height: 1.4;
+}
+
+/* Ledger List (Scrolls) */
+.ledger-list {
+  flex: 1 1 auto;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+  padding: 8px 12px calc(var(--entry-h, 120px) + env(safe-area-inset-bottom) + 12px) 12px;
+  min-height: 140px;
+}
+
+.ledger-empty-msg {
+  font-size: 0.9375rem;
+  color: var(--muted);
+  text-align: center;
+  padding: 40px 16px;
+  line-height: 1.5;
+}
+
+/* One line per row that has detail or valid amount */
+.ledger-line {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 6px 6px;
+  border-bottom: 1px dotted #A8A29E;
+  border-radius: 4px;
+  transition: background-color 0.1s ease;
+  min-height: 44px;
+  scroll-margin-bottom: calc(var(--entry-h, 120px) + 12px);
+}
+
+.ledger-line:hover {
+  background-color: var(--bg);
+}
+
+.ledger-line.is-editing {
+  background-color: #FEF9C3 !important;
+  border-bottom-color: #CA8A04;
+}
+
+/* Accessible button encompassing amount and detail to start edit */
+.ledger-line-main {
+  background: transparent;
+  border: none;
+  padding: 4px 0;
+  margin: 0;
+  text-align: left;
+  font: inherit;
+  cursor: pointer;
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+  flex: 1;
+  min-width: 0;
+  min-height: 44px;
+  -webkit-tap-highlight-color: transparent;
+  color: inherit;
+}
+
+.ledger-line-main:focus-visible {
+  outline: 2px solid var(--ink);
+  outline-offset: 2px;
+  border-radius: 4px;
+}
+
+.ledger-line-content {
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+  flex: 1;
+  min-width: 0;
+}
+
+/* Monospace, tabular-nums, right-aligned */
+.ledger-amount {
+  font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
+  font-size: 1rem;
+  font-weight: 700;
+  white-space: pre;
+  text-align: right;
+  flex-shrink: 0;
+}
+
+.ledger-amount.is-positive {
+  color: var(--pos);
+}
+
+.ledger-amount.is-negative {
+  color: var(--neg);
+}
+
+.ledger-amount.is-zero {
+  color: var(--ink);
+}
+
+/* Detail text in brackets, normal font, wraps on long text */
+.ledger-detail {
+  font-family: var(--font-sans);
+  font-size: 0.9375rem;
+  color: var(--ink);
+  line-height: 1.4;
+  word-break: break-word;
+  overflow-wrap: break-word;
+}
+
+/* Small trash button, 44x44 min tap target */
+.btn-line-delete {
+  background: transparent;
+  border: 1px solid transparent;
+  color: var(--muted);
+  width: 44px;
+  height: 44px;
+  min-width: 44px;
+  min-height: 44px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  border-radius: 6px;
+  padding: 0;
+  flex-shrink: 0;
+}
+
+.btn-line-delete:hover,
+.btn-line-delete:active {
+  background-color: #FEE2E2;
+  color: var(--neg);
+}
+
+/* Total Bar (Below the list, above the entry box) */
+.ledger-total-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 14px;
+  border-top: 1px solid var(--line);
+  border-bottom: 1px solid var(--line);
+  background-color: var(--card);
+  min-height: 48px;
+}
+
+.total-bar-label {
+  font-size: 1rem;
+  font-weight: 700;
+  color: var(--ink);
+}
+
+.total-bar-badge {
+  font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
+  font-size: 1.0625rem;
+  font-weight: 700;
+  padding: 4px 12px;
+  border-radius: 6px;
+  display: inline-block;
+  line-height: 1.3;
+}
+
+.total-bar-badge.is-positive {
+  background-color: #E8F5E9;
+  color: var(--pos);
+  border: 1px solid var(--pos);
+}
+
+.total-bar-badge.is-negative {
+  background-color: #FDECEC;
+  color: var(--neg);
+  border: 1px solid var(--neg);
+}
+
+.total-bar-badge.is-zero {
+  background-color: #F3F3F3;
+  color: var(--ink);
+  border: 1px solid #555555;
+}
+
+/* Entry Box Container (Sticky at bottom of screen, above keyboard) */
+.entry-box-container {
+  position: sticky;
+  bottom: 0;
+  background-color: var(--card);
+  border-top: 1px solid var(--line);
+  padding: 10px 14px calc(10px + env(safe-area-inset-bottom)) 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  z-index: 20;
+}
+
+.entry-row {
+  display: flex;
+  width: 100%;
+  gap: 8px;
+}
+
+.entry-input {
+  width: 100%;
+  min-height: 48px;
+  height: 48px;
+  font-size: 1rem; /* 16px Avoid iOS auto-zoom */
+  border: 1px solid var(--muted);
+  border-radius: 6px;
+  padding: 0 12px;
+  color: var(--ink);
+  background-color: var(--card);
+  box-sizing: border-box;
+  font-family: inherit;
+  -webkit-appearance: none;
+}
+
+.entry-input:focus {
+  outline: none;
+  border-color: var(--ink);
+  box-shadow: 0 0 0 1px var(--ink);
+}
+
+.entry-row-amount {
+  display: flex;
+  gap: 8px;
+}
+
+.entry-amount-input {
+  flex: 1;
+  font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
+  font-size: 1rem;
+}
+
+/* Sign Toggle Button: exactly 56px x 48px */
+.btn-sign-toggle {
+  width: 56px;
+  min-width: 56px;
+  max-width: 56px;
+  height: 48px;
+  min-height: 48px;
+  border-radius: 6px;
+  font-size: 26px;
+  font-weight: 700;
+  line-height: 1;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  user-select: none;
+  padding: 0;
+  box-sizing: border-box;
+  transition: background-color 0.15s ease, border-color 0.15s ease;
+}
+
+.btn-sign-toggle.is-positive {
+  background-color: #E8F5E9;
+  color: var(--pos);
+  border: 1px solid var(--pos);
+}
+
+.btn-sign-toggle.is-negative {
+  background-color: #FDECEC;
+  color: var(--neg);
+  border: 1px solid var(--neg);
+}
+
+/* Row 3: Error Text Line */
+.entry-error-msg {
+  font-size: 0.8125rem;
+  color: var(--neg);
+  font-weight: 600;
+  min-height: 18px;
+  line-height: 18px;
+  padding: 0 2px;
+}
+
+/* Row 4: Submit Actions */
+.entry-row-actions {
+  display: flex;
+  gap: 8px;
+}
+
+.btn-entry-submit {
+  flex: 1;
+  height: 48px;
+  min-height: 48px;
+  background-color: var(--ink);
+  color: var(--card);
+  border: 1px solid var(--ink);
+  border-radius: 6px;
+  font-size: 1rem;
+  font-weight: 700;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0 16px;
+}
+
+.btn-entry-submit:active {
+  opacity: 0.9;
+}
+
+.btn-entry-cancel {
+  height: 48px;
+  min-height: 48px;
+  background-color: transparent;
+  color: var(--muted);
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  font-size: 0.9375rem;
+  font-weight: 600;
+  cursor: pointer;
+  padding: 0 14px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.btn-entry-cancel:active {
+  background-color: var(--bg);
+  color: var(--ink);
+}
+
+/* --- 5. MODAL DIALOGS (Bottom sheet on mobile <=480px, centered on desktop >480px) --- */
+.modal-backdrop {
+  position: fixed;
+  inset: 0;
+  background-color: rgba(0, 0, 0, 0.4);
+  display: flex;
+  align-items: flex-end; /* Mobile: bottom sheet */
+  justify-content: center;
+  padding: 0;
+  z-index: 1000;
+}
+
+.modal-card {
+  background: var(--bg);
+  border: 1px solid var(--line);
+  border-bottom: none;
+  border-top-left-radius: 16px;
+  border-top-right-radius: 16px;
+  border-bottom-left-radius: 0;
+  border-bottom-right-radius: 0;
+  width: 100%;
+  max-width: 100%;
+  padding: 16px 16px calc(16px + env(safe-area-inset-bottom));
+  box-sizing: border-box;
+}
+
+@media (min-width: 481px) {
+  .modal-backdrop {
+    align-items: center;
+    padding: 16px;
+  }
+  .modal-card {
+    border-radius: 12px;
+    border-bottom: 1px solid var(--line);
+    max-width: 420px;
+    padding: 20px;
+  }
+}
+
+.modal-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 14px;
+}
+
+.modal-title {
+  font-size: 1.125rem; /* 18px */
+  font-weight: 600;
+  color: var(--ink);
+  margin: 0;
+}
+
+.btn-close-modal {
+  width: 44px;
+  height: 44px;
+  min-width: 44px;
+  min-height: 44px;
+  background: transparent;
+  border: none;
+  font-size: 26px;
+  line-height: 1;
+  color: var(--muted);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 6px;
+  padding: 0;
+}
+
+.modal-body {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-bottom: 16px;
+}
+
+.form-label {
+  font-size: 0.875rem; /* 14px */
+  font-weight: 500;
+  color: var(--muted);
+}
+
+.form-input {
+  height: 48px;
+  min-height: 48px;
+  font-size: 1rem; /* 16px prevents iOS zoom */
+  background: var(--card);
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  padding: 0 12px;
+  color: var(--ink);
+  width: 100%;
+  box-sizing: border-box;
+  outline: none;
+}
+
+.form-input:focus {
+  border-color: var(--ink);
+}
+
+.confirm-message {
+  font-size: 0.9375rem; /* 15px */
+  line-height: 1.45;
+  color: var(--ink);
+  margin: 0;
+}
+
+.modal-footer {
+  display: flex;
+  gap: 10px;
+}
+
+.modal-footer .btn {
+  flex: 1;
+  height: 48px;
+  min-height: 48px;
+  font-size: 0.9375rem;
+  font-weight: 500;
+  border-radius: 8px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.btn-modal-cancel {
+  background: transparent;
+  border: 1px solid var(--line);
+  color: var(--ink);
+}
+
+.btn-modal-cancel:active {
+  background: var(--line);
+}
+
+.btn-modal-primary {
+  background: var(--ink);
+  border: none;
+  color: var(--bg);
+}
+
+.btn-modal-primary:active {
+  opacity: 0.9;
+}
+
+.btn-modal-danger {
+  background: var(--neg);
+  border: none;
+  color: #ffffff;
+}
+
+.btn-modal-danger:active {
+  opacity: 0.9;
+}
+
+/* --- 6. TOAST NOTIFICATIONS (With Undo Support) --- */
+.toast-container {
+  position: fixed;
+  bottom: calc(80px + env(safe-area-inset-bottom));
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 2000;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  width: calc(100% - 32px);
+  max-width: 420px;
+  pointer-events: none;
+}
+
+.toast {
+  background: var(--ink);
+  color: var(--bg);
+  padding: 12px 16px;
+  border-radius: 8px;
+  font-size: 0.875rem; /* 14px */
+  font-weight: 500;
+  pointer-events: auto;
+  animation: fadeInOut 2.8s ease forwards;
+}
+
+.toast.toast-error {
+  background: var(--neg);
+  color: #ffffff;
+}
+
+.toast.toast-with-action {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  animation: fadeIn 0.2s ease forwards;
+}
+
+.btn-toast-undo {
+  min-height: 36px;
+  padding: 4px 12px;
+  font-size: 0.8125rem;
+  font-weight: 600;
+  background: var(--card);
+  color: var(--ink);
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.btn-toast-undo:hover, .btn-toast-undo:active {
+  background: var(--bg);
+}
+
+/* Hidden print-only container on screen */
+.print-sheet {
+  display: none;
+}
+
+@keyframes fadeInOut {
+  0% { opacity: 0; transform: translateY(10px); }
+  15% { opacity: 1; transform: translateY(0); }
+  85% { opacity: 1; transform: translateY(0); }
+  100% { opacity: 0; transform: translateY(-10px); }
+}
+
+@keyframes fadeIn {
+  0% { opacity: 0; transform: translateY(10px); }
+  100% { opacity: 1; transform: translateY(0); }
+}
+
+/* ==========================================================================
+   PRINT / PDF STYLESHEET (A4 Professional Paper Receipt)
+   ========================================================================== */
+@media print {
+  @page {
+    size: A4;
+    margin: 12mm 10mm;
+  }
+
+  body {
+    background: #ffffff !important;
+    color: #1C1917 !important;
+    font-family: "Noto Sans Gujarati", "Noto Sans Devanagari", "Shruti", "Mangal", "Nirmala UI", system-ui, sans-serif !important;
+    margin: 0 !important;
+    padding: 0 !important;
+  }
+
+  /* Hide all on-screen UI */
+  .no-print,
+  .app-header,
+  .app-main,
+  .modal-backdrop,
+  .toast-container {
+    display: none !important;
+  }
+
+  /* Reveal dedicated print sheet */
+  #print-sheet,
+  .print-sheet {
+    display: block !important;
+    width: 100% !important;
+    background: #ffffff !important;
+    color: #1C1917 !important;
+    box-shadow: none !important;
+    border: none !important;
+    padding: 0 !important;
+    margin: 0 !important;
+  }
+
+  /* Force background fills and colors across all browsers */
+  #print-sheet,
+  #print-sheet *,
+  .print-sheet,
+  .print-sheet * {
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+  }
+
+  /* Receipt container: 170mm wide, centered, light border, rounded corners */
+  .print-receipt {
+    width: 170mm !important;
+    max-width: 100% !important;
+    margin: 0 auto !important;
+    border: 0.3mm solid #E7E0D0 !important;
+    border-radius: 2mm !important;
+    background: #ffffff !important;
+    box-sizing: border-box !important;
+  }
+
+  /* Receipt Header: soft saffron fill, darker left accent bar, rounded top corners */
+  .print-head {
+    background: #FFF1D0 !important;
+    border: none !important;
+    border-left: 1.6mm solid #D97706 !important;
+    padding: 5mm 6mm !important;
+    border-top-left-radius: 2mm !important;
+    border-top-right-radius: 2mm !important;
+    box-sizing: border-box !important;
+  }
+
+  .print-brand {
+    font-size: 10pt !important;
+    font-weight: 500 !important;
+    letter-spacing: 0.4mm !important;
+    color: #B45309 !important;
+    margin: 0 0 1mm 0 !important;
+    text-transform: uppercase !important;
+    line-height: 1.2 !important;
+  }
+
+  .print-title {
+    font-size: 20pt !important;
+    font-weight: 700 !important;
+    color: #3B2A00 !important;
+    line-height: 1.3 !important;
+    overflow-wrap: anywhere !important;
+    word-break: break-word !important;
+    margin: 0 !important;
+  }
+
+  .print-meta {
+    display: flex !important;
+    justify-content: space-between !important;
+    align-items: center !important;
+    margin-top: 1.5mm !important;
+    font-size: 12pt !important;
+    color: #5B4A22 !important;
+  }
+
+  /* Receipt Body */
+  .print-body {
+    padding: 5mm 6mm 2mm !important;
+    box-sizing: border-box !important;
+  }
+
+  .print-body.print-closing-body {
+    padding-top: 0 !important;
+  }
+
+  .print-cap {
+    display: flex !important;
+    justify-content: space-between !important;
+    font-size: 10pt !important;
+    color: #78716C !important;
+    letter-spacing: 0.2mm !important;
+    margin-bottom: 2mm !important;
+  }
+
+  .print-line {
+    display: flex !important;
+    align-items: baseline !important;
+    gap: 2.5mm !important;
+    padding: 1.6mm 0 !important;
+    break-inside: avoid !important;
+    page-break-inside: avoid !important;
+    box-sizing: border-box !important;
+  }
+
+  .print-ix {
+    width: 6mm !important;
+    flex: none !important;
+    text-align: right !important;
+    font-size: 10pt !important;
+    color: #A8A29E !important;
+  }
+
+  .print-de {
+    font-size: 13pt !important;
+    color: #1C1917 !important;
+    overflow-wrap: anywhere !important;
+    word-break: break-word !important;
+    flex: 0 1 auto !important;
+    min-width: 0 !important;
+    max-width: 100% !important;
+  }
+
+  .print-ld {
+    flex: 1 1 4mm !important;
+    min-width: 4mm !important;
+    border-bottom: 0.5mm dotted #C9C1AE !important;
+    transform: translateY(-1mm) !important;
+  }
+
+  .print-am {
+    font-family: "Courier New", "Noto Sans Mono", monospace !important;
+    font-variant-numeric: tabular-nums !important;
+    font-size: 14pt !important;
+    white-space: pre !important;
+    text-align: right !important;
+    flex: none !important;
+    color: #1C1917 !important;
+  }
+
+  .print-am.is-pos {
+    color: #166534 !important;
+  }
+
+  .print-am.is-neg {
+    color: #B91C1C !important;
+  }
+
+  .print-am.is-zero {
+    color: #1C1917 !important;
+  }
+
+  /* Dashed Divider */
+  .print-dash {
+    border: none !important;
+    border-top: 0.5mm dashed #C9C1AE !important;
+    height: 0 !important;
+    margin: 3mm 6mm !important;
+  }
+
+  /* Subtotals: Jama / Ghata */
+  .print-sub {
+    display: flex !important;
+    justify-content: space-between !important;
+    align-items: baseline !important;
+    padding: 0.6mm 6mm !important;
+    font-size: 13pt !important;
+    color: #57534E !important;
+    box-sizing: border-box !important;
+  }
+
+  .print-sub .print-am {
+    font-size: 13pt !important;
+  }
+
+  /* Total Box */
+  .print-total {
+    margin: 4mm 6mm 5mm !important;
+    padding: 3.5mm 5mm !important;
+    display: flex !important;
+    justify-content: space-between !important;
+    align-items: center !important;
+    border-radius: 2mm !important;
+    box-sizing: border-box !important;
+    border: 0.5mm solid #166534 !important;
+    background: #E8F5E9 !important;
+  }
+
+  .print-total.is-pos {
+    border-color: #166534 !important;
+    background: #E8F5E9 !important;
+  }
+
+  .print-total.is-pos .print-total-label,
+  .print-total.is-pos .print-total-value {
+    color: #14532D !important;
+  }
+
+  .print-total.is-neg {
+    border-color: #B91C1C !important;
+    background: #FDECEC !important;
+  }
+
+  .print-total.is-neg .print-total-label,
+  .print-total.is-neg .print-total-value {
+    color: #7F1D1D !important;
+  }
+
+  .print-total.is-zero {
+    border-color: #555555 !important;
+    background: #F3F3F3 !important;
+  }
+
+  .print-total.is-zero .print-total-label,
+  .print-total.is-zero .print-total-value {
+    color: #1C1917 !important;
+  }
+
+  .print-total-label {
+    font-size: 14pt !important;
+    font-weight: 700 !important;
+    color: #14532D !important;
+  }
+
+  .print-total-value {
+    font-family: "Courier New", "Noto Sans Mono", monospace !important;
+    font-variant-numeric: tabular-nums !important;
+    font-size: 22pt !important;
+    font-weight: 700 !important;
+    color: #14532D !important;
+  }
+
+  /* Footer */
+  .print-foot {
+    border-top: 0.3mm solid #E7E0D0 !important;
+    padding: 3.5mm 6mm !important;
+    text-align: center !important;
+    font-size: 10pt !important;
+    color: #78716C !important;
+    border-bottom-left-radius: 2mm !important;
+    border-bottom-right-radius: 2mm !important;
+    box-sizing: border-box !important;
+  }
+
+  /* Cut Line */
+  .print-cut {
+    width: 170mm !important;
+    max-width: 100% !important;
+    margin: 6mm auto 0 !important;
+    border: none !important;
+    border-top: 0.5mm dashed #D6D0C0 !important;
+    height: 0 !important;
+    break-before: avoid !important;
+    page-break-before: avoid !important;
+  }
+
+  /* Closing Wrapper (keeps last 2 lines + dash + subtotals + total + foot together) */
+  .print-closing {
+    display: block !important;
+    break-inside: avoid !important;
+    page-break-inside: avoid !important;
+  }
+
+  /* Empty state */
+  .print-empty-line {
+    text-align: center !important;
+    font-size: 13pt !important;
+    color: #78716C !important;
+    padding: 6mm !important;
+  }
+}

@@ -1,0 +1,232 @@
+<!DOCTYPE html>
+<html lang="hi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#FBF8F1">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-title" content="Hisaab Karo">
+  <meta name="apple-mobile-web-app-status-bar-style" content="default">
+  <meta name="description" content="Hisaab Karo - Aasan digital khata notebook. Ghar, dukan aur personal hisaab ke liye.">
+  <title>Hisaab Karo</title>
+  <link rel="stylesheet" href="style.css">
+  <script src="script.js" defer></script>
+</head>
+<body>
+
+  <!-- Main Container (Single column, max 480px, centered on desktop) -->
+  <main class="app-main">
+
+    <!-- ========================================== -->
+    <!-- VIEW 1: HOME SCREEN (Pages List)           -->
+    <!-- ========================================== -->
+    <section id="home-view" class="view-section active">
+      <div class="home-container">
+        
+        <!-- Header -->
+        <header class="app-header no-print">
+          <div class="brand" id="brand-logo" role="button" tabindex="0" title="Home par jayein">
+            <div class="brand-icon-wrap" aria-hidden="true">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M4 19.5v-15A2.5 2.5 0 0 1 6.5 2H20v20H6.5a2.5 2.5 0 0 1-2.5-2.5Z"></path>
+                <path d="M6 6h10"></path>
+                <path d="M6 10h10"></path>
+              </svg>
+            </div>
+            <h1 class="brand-title">Hisaab Karo</h1>
+          </div>
+          <div id="save-indicator" class="header-save" title="Auto-save chalu hai">
+            <span class="save-dot" aria-hidden="true"></span>
+            <span id="save-indicator-text" class="save-text">Auto-save</span>
+          </div>
+        </header>
+
+        <!-- Section Label Row -->
+        <div class="home-section-header">
+          <h2 class="section-title">Mere hisaab</h2>
+          <span id="pages-count-badge" class="section-count">0 pages</span>
+        </div>
+
+        <!-- Cards List -->
+        <div id="pages-list" class="cards-list">
+          <!-- Rendered dynamically by script.js -->
+        </div>
+
+        <!-- Empty State -->
+        <div id="home-empty-state" class="home-empty" style="display: none;">
+          <p class="empty-msg">Abhi koi hisaab nahi. Neeche se naya hisaab banayein.</p>
+        </div>
+
+        <!-- Backup Row -->
+        <div class="backup-row no-print">
+          <button type="button" id="btn-backup-download" class="btn-backup">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+              <polyline points="7 10 12 15 17 10"></polyline>
+              <line x1="12" y1="15" x2="12" y2="3"></line>
+            </svg>
+            <span id="label-backup-download">Backup lein</span>
+          </button>
+          <button type="button" id="btn-backup-restore-trigger" class="btn-backup">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+              <polyline points="17 8 12 3 7 8"></polyline>
+              <line x1="12" y1="3" x2="12" y2="15"></line>
+            </svg>
+            <span id="label-backup-restore">Backup restore</span>
+          </button>
+          <!-- Hidden file input for restore -->
+          <input type="file" id="backup-file-input" accept=".json,application/json" class="visually-hidden">
+        </div>
+
+        <!-- Small Recovery Link (Shown only if corrupt/prerestore backup keys exist) -->
+        <div id="recovery-row" class="recovery-row no-print" style="display: none;">
+          <button type="button" id="btn-recover-old" class="btn-recovery">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"></path>
+              <path d="M3 3v5h5"></path>
+            </svg>
+            <span id="label-recover-old">Purana data nikalein</span>
+          </button>
+        </div>
+
+        <!-- Sticky Bottom Bar -->
+        <div class="bottom-bar no-print">
+          <button type="button" id="btn-create-page" class="btn-new-hisaab">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <line x1="12" y1="5" x2="12" y2="19"></line>
+              <line x1="5" y1="12" x2="19" y2="12"></line>
+            </svg>
+            <span id="label-new-page">Naya hisaab</span>
+          </button>
+        </div>
+
+      </div>
+    </section>
+
+    <!-- ========================================== -->
+    <!-- VIEW 2: NOTEBOOK PAGE SCREEN (Ledger View) -->
+    <!-- ========================================== -->
+    <section id="page-view" class="view-section" style="display: none;">
+      
+      <div class="ledger-screen">
+        <!-- 1. Top bar: back arrow (to Home), page title (tap to rename), and "PDF" button -->
+        <header class="ledger-top-bar no-print">
+          <button type="button" id="btn-back-to-home" class="btn-top-back" aria-label="Wapas (Home)" title="Wapas (Home)">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <line x1="19" y1="12" x2="5" y2="12"></line>
+              <polyline points="12 19 5 12 12 5"></polyline>
+            </svg>
+          </button>
+          <div class="page-title-wrap">
+            <h2 id="sheet-page-title" class="page-main-title" role="button" tabindex="0" title="Hisaab ka naam badlo">Ghar ka hisaab</h2>
+          </div>
+          <button type="button" id="btn-print-pdf" class="btn-top-pdf" aria-label="PDF Download" title="PDF ke roop me save karein">
+            <span class="btn-pdf-icon">📄</span> <span class="btn-pdf-text">PDF</span>
+          </button>
+        </header>
+
+        <!-- Old columns warning note (shown only if page has extra columns from legacy data) -->
+        <div id="old-columns-note" class="old-columns-note no-print" style="display: none;"></div>
+
+        <!-- 2. Ledger list (scrolls): one line per row that has detail or valid amount -->
+        <div id="ledger-list" class="ledger-list no-print" role="list">
+          <!-- Rendered dynamically by script.js -->
+        </div>
+
+        <!-- 3. Total bar (below the list, above the entry box) -->
+        <div id="ledger-total-bar" class="ledger-total-bar no-print">
+          <span class="total-bar-label">Total</span>
+          <span id="ledger-total-value" class="total-bar-badge is-zero">0</span>
+        </div>
+
+        <!-- 4. Entry box (sticky at the bottom of the screen, above the keyboard) -->
+        <div id="entry-box-container" class="entry-box-container no-print">
+          <!-- Row 1: text input -->
+          <div class="entry-row">
+            <input type="text" id="input-entry-detail" class="entry-input entry-detail-input" placeholder="Naam ya detail likhein" aria-label="Naam ya detail likhein" enterkeyhint="next" autocomplete="off">
+          </div>
+          <!-- Row 2: amount input + sign toggle button (56x48px) -->
+          <div class="entry-row entry-row-amount">
+            <input type="text" inputmode="decimal" id="input-entry-amount" class="entry-input entry-amount-input" placeholder="Amount" aria-label="Amount" enterkeyhint="done" autocomplete="off">
+            <button type="button" id="btn-sign-toggle" class="btn-sign-toggle is-positive" aria-label="Plus ya minus badlo" title="Plus ya minus badlo">+</button>
+          </div>
+          <!-- Row 3: error text line (empty by default) -->
+          <div id="entry-error-msg" class="entry-error-msg" aria-live="polite"></div>
+          <!-- Row 4: full-width "Jodein" button (or "Badlein" + "Raddh karein" during edit) -->
+          <div class="entry-row entry-row-actions">
+            <button type="button" id="btn-submit-entry" class="btn-entry-submit">Jodein</button>
+            <button type="button" id="btn-cancel-edit" class="btn-entry-cancel" style="display: none;">Raddh karein</button>
+          </div>
+        </div>
+      </div>
+
+    </section>
+
+  </main>
+
+  <!-- ========================================== -->
+  <!-- MODAL DIALOGS (Clean, accessible, touch-friendly) -->
+  <!-- ========================================== -->
+  
+  <!-- Generic Modal Backdrop -->
+  <div id="modal-backdrop" class="modal-backdrop no-print" style="display: none;">
+    
+    <!-- Modal 1: Create New Page -->
+    <div id="modal-create-page" class="modal-card" style="display: none;">
+      <div class="modal-header">
+        <h3 class="modal-title">Naya hisaab banayein</h3>
+        <button type="button" class="btn-close-modal" data-close="true" aria-label="Band karein">&times;</button>
+      </div>
+      <div class="modal-body">
+        <label for="input-new-page-title" class="form-label">Hisaab ka naam:</label>
+        <input type="text" id="input-new-page-title" class="form-input" placeholder="jaise: Ghar ka kharcha, Shop udhar...">
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-modal-cancel" data-close="true">Radd karein</button>
+        <button type="button" id="btn-confirm-create-page" class="btn btn-modal-primary">Banao</button>
+      </div>
+    </div>
+
+    <!-- Modal 2: Rename Page -->
+    <div id="modal-rename-page" class="modal-card" style="display: none;">
+      <div class="modal-header">
+        <h3 class="modal-title">Hisaab ka naam badlein</h3>
+        <button type="button" class="btn-close-modal" data-close="true" aria-label="Band karein">&times;</button>
+      </div>
+      <div class="modal-body">
+        <label for="input-rename-page-title" class="form-label">Naya naam:</label>
+        <input type="text" id="input-rename-page-title" class="form-input" placeholder="Hisaab ka naya naam...">
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-modal-cancel" data-close="true">Radd karein</button>
+        <button type="button" id="btn-confirm-rename-page" class="btn btn-modal-primary">Save karein</button>
+      </div>
+    </div>
+
+    <!-- Modal 3: Confirm Delete Action -->
+    <div id="modal-confirm" class="modal-card" style="display: none;">
+      <div class="modal-header">
+        <h3 id="modal-confirm-title" class="modal-title">Hisaab delete karein?</h3>
+        <button type="button" class="btn-close-modal" data-close="true" aria-label="Band karein">&times;</button>
+      </div>
+      <div class="modal-body">
+        <p id="modal-confirm-message" class="confirm-message">Kya aap sach me ise delete karna chahte hain?</p>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-modal-cancel" data-close="true">Radd karein</button>
+        <button type="button" id="btn-confirm-action" class="btn btn-modal-danger">Delete karein</button>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- Toast Message Alert for Feedback -->
+  <div id="toast-container" class="toast-container no-print" aria-live="polite"></div>
+
+  <!-- Hidden Print-only Container (Rendered on demand during print/PDF) -->
+  <div id="print-sheet" class="print-sheet" aria-hidden="true" style="display: none;"></div>
+
+</body>
+</html>
